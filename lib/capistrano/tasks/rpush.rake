@@ -16,9 +16,10 @@ namespace :rpush do
     on roles (fetch(:rpush_role)) do |role|
       git_plugin.rpush_switch_user(role) do
         if test "[ -f #{fetch(:rpush_pid)} ]"
-          invoke 'rpush:stop'
+          invoke 'rpush:stopstart'
+        else
+          invoke 'rpush:start'
         end
-        invoke 'rpush:start'
       end
     end
   end
@@ -64,6 +65,21 @@ namespace :rpush do
           within current_path do
             with rack_env: fetch(:rpush_env) do
               execute :rpush, "stop -p #{fetch(:rpush_pid)} -c #{fetch(:rpush_conf)} -e #{fetch(:rpush_env)}"
+            end
+          end
+        end
+      end
+    end
+  end
+
+  desc 'StopStart rpush'
+  task :stopstart do
+    on roles (fetch(:rpush_role)) do |role|
+      git_plugin.rpush_switch_user(role) do
+        if test "[ -f #{fetch(:rpush_pid)} ]"
+          within current_path do
+            with rack_env: fetch(:rpush_env) do
+              execute :rpush, "stop -p #{fetch(:rpush_pid)} -c #{fetch(:rpush_conf)} -e #{fetch(:rpush_env)} && bundle exec rpush start -p #{fetch(:rpush_pid)} -c #{fetch(:rpush_conf)} -e #{fetch(:rpush_env)}"
             end
           end
         end
