@@ -13,7 +13,7 @@ namespace :rpush do
 
   desc 'Restart rpush'
   task :restart do
-    on roles (fetch(:rpush_role)) do |role|
+    on roles (fetch(:rpush_role)), in: :sequence, wait: 10 do |role|
       git_plugin.rpush_switch_user(role) do
         if test "[ -f #{fetch(:rpush_pid)} ]"
           invoke 'rpush:stop'
